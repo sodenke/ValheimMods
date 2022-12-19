@@ -1,5 +1,4 @@
-﻿using System;
-using HarmonyLib;
+﻿using HarmonyLib;
 using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -46,14 +45,6 @@ namespace MonsterLootMultiplierMod
             }
             __result = list;
             return false;
-        }
-
-        [HarmonyPatch(typeof(Fish), "RPC_Pickup")]
-        [HarmonyPrefix]
-        private static bool FishStack(Fish __instance)
-        {
-            __instance.m_pickupItemStackSize *= MonsterLootMultiplier.lootMultiplier.Value;
-            return true;
         }
     }
 }

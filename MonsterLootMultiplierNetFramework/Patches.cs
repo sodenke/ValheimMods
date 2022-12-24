@@ -1,10 +1,12 @@
 ﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace MonsterLootMultiplierMod
 {
+    [RequireComponent(typeof(Character))]
     public class Patches
     {
         [HarmonyPatch(typeof(CharacterDrop), "GenerateDropList")]
@@ -12,9 +14,11 @@ namespace MonsterLootMultiplierMod
         private static bool LootMultiplierCustom(CharacterDrop __instance, ref List<KeyValuePair<GameObject, int>> __result)
         {
             List<KeyValuePair<GameObject, int>> list = new List<KeyValuePair<GameObject, int>>();
-            // m_character is no longer public so no level multiplier for this mod.
+            // m_character is no longer public so have to get the monster character seperatly and then check
             //int num = ((!__instance.m_character) ? 1 : Mathf.Max(1, (int)Mathf.Pow(2f, __instance.m_character.GetLevel() - 1)));
-            int num = 1;
+            Character monster = __instance.GetComponent<Character>();
+            int num = ((!monster) ? 1 : Mathf.Max(1, (int)Mathf.Pow(2f, monster.GetLevel() - 1)));
+
             foreach (CharacterDrop.Drop drop in __instance.m_drops)
             {
                 if (drop.m_prefab == null)
@@ -38,8 +42,28 @@ namespace MonsterLootMultiplierMod
                         num3 = ZNet.instance.GetNrOfPlayers();
                     }
                     if (num3 > 0)
-                    {
-                        list.Add(new KeyValuePair<GameObject, int>(drop.m_prefab, num3 * MonsterLootMultiplier.lootMultiplier.Value));
+                    {   
+                        //check if the drop is a boss trophy
+                        bool isBossTrophy = false;
+                        foreach(var trophy in MonsterLootMultiplier.bossTrophies)
+                        {
+                            if(drop.m_prefab.name.Contains(trophy))
+                            {
+                                isBossTrophy = true;
+                            }
+                        }
+
+                        // if option is turned on and its a boss trophy use orginal drop code to prevent more than 1
+                        if (MonsterLootMultiplier.disableForBossTrophies.Value && isBossTrophy)
+                        {
+                            list.Add(new KeyValuePair<GameObject, int>(drop.m_prefab, num3));
+                        }
+                        else 
+                        { 
+                            // Flow when not a boss trophy
+                            // Added Math.Ceiling otherwise a values like 0.5 would disable all drops that are originally 1
+                            list.Add(new KeyValuePair<GameObject, int>(drop.m_prefab, (int)Math.Ceiling(num3 * MonsterLootMultiplier.lootMultiplier.Value)));
+                        }
                     }
                 }
             }

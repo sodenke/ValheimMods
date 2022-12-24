@@ -2,6 +2,7 @@
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
@@ -27,7 +28,11 @@ namespace MonsterLootMultiplierMod
 
         public readonly string modFolder;
 
-        public static ConfigEntry<int> lootMultiplier;
+        public static ConfigEntry<float> lootMultiplier;
+
+        public static ConfigEntry<bool> disableForBossTrophies;
+
+        public static List<string> bossTrophies = new List<string> { "TrophyEikthyr", "TrophyTheElder", "TrophyBonemass", "TrophyDragonQueen", "TrophyGoblinKing", "TrophySeekerQueen" };
 
         public MonsterLootMultiplier()
         {
@@ -40,7 +45,8 @@ namespace MonsterLootMultiplierMod
 
         public void Awake()
         {
-            lootMultiplier = base.Config.Bind("General", "Multiplier for monster drops", 1, " Monster Drop Multiplier");
+            lootMultiplier = base.Config.Bind("General", "Multiplier for monster drops", 1.0f, " Monster Drop Multiplier");
+            disableForBossTrophies = base.Config.Bind("General", "Disable for boss trophies", true, " Disable for boss trophies");
         }
     }
 }

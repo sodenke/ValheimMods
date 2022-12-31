@@ -53,22 +53,45 @@ namespace MonsterLootMultiplierMod
                             }
                         }
 
-                        // if option is turned on and its a boss trophy use orginal drop code to prevent more than 1
-                        if (MonsterLootMultiplier.disableForBossTrophies.Value && isBossTrophy)
+                        if (MonsterLootMultiplier.whiteListEnabled.Value)
                         {
-                            list.Add(new KeyValuePair<GameObject, int>(drop.m_prefab, num3));
+                            bool itemInWhiteList = MonsterLootMultiplier.whitelist.Contains(drop.m_prefab.name.ToLower());
+                            if (itemInWhiteList)
+                            {
+                                // do extra drops
+                                DropItems(drop, list, isBossTrophy, num3);
+                            }
+                            else
+                            {
+                                // original drop code
+                                list.Add(new KeyValuePair<GameObject, int>(drop.m_prefab, num3));
+                            }
                         }
-                        else 
-                        { 
-                            // Flow when not a boss trophy
-                            // Added Math.Ceiling otherwise a values like 0.5 would disable all drops that are originally 1
-                            list.Add(new KeyValuePair<GameObject, int>(drop.m_prefab, (int)Math.Ceiling(num3 * MonsterLootMultiplier.lootMultiplier.Value)));
+                        else
+                        {
+                            // do extra drops
+                            DropItems(drop, list, isBossTrophy, num3);
                         }
                     }
                 }
             }
             __result = list;
             return false;
+        }
+
+        private static void DropItems(CharacterDrop.Drop drop, List<KeyValuePair<GameObject, int>> list, bool isBossTrophy, int originalNumberToDrop)
+        {
+            // if option is turned on and its a boss trophy use orginal drop code to prevent more than 1
+            if (MonsterLootMultiplier.disableForBossTrophies.Value && isBossTrophy)
+            {
+                list.Add(new KeyValuePair<GameObject, int>(drop.m_prefab, originalNumberToDrop));
+            }
+            else
+            {
+                // Flow when not a boss trophy
+                // Added Math.Ceiling otherwise a values like 0.5 would disable all drops that are originally 1
+                list.Add(new KeyValuePair<GameObject, int>(drop.m_prefab, (int)Math.Ceiling(originalNumberToDrop * MonsterLootMultiplier.lootMultiplier.Value)));
+            }
         }
     }
 }

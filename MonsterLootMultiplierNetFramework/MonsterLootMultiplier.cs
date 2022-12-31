@@ -2,8 +2,10 @@
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace MonsterLootMultiplierMod
@@ -32,6 +34,10 @@ namespace MonsterLootMultiplierMod
 
         public static ConfigEntry<bool> disableForBossTrophies;
 
+        public static ConfigEntry<bool> whiteListEnabled;
+
+        public static List<string> whitelist;
+
         public static List<string> bossTrophies = new List<string> { "TrophyEikthyr", "TrophyTheElder", "TrophyBonemass", "TrophyDragonQueen", "TrophyGoblinKing", "TrophySeekerQueen" };
 
         public MonsterLootMultiplier()
@@ -47,6 +53,32 @@ namespace MonsterLootMultiplierMod
         {
             lootMultiplier = base.Config.Bind("General", "Multiplier for monster drops", 1.0f, " Monster Drop Multiplier");
             disableForBossTrophies = base.Config.Bind("General", "Disable for boss trophies", true, " Disable for boss trophies");
+            whiteListEnabled = base.Config.Bind("General", "Whitelist enabled", false, " Whitelist enabled");
+            try
+            {
+                whitelist = File.ReadAllLines(Path.GetDirectoryName(assembly.Location) + "\\whitelist.txt").Distinct().ToList();
+                for(int i=0; i<whitelist.Count; i++)
+                {
+                    whitelist[i] = whitelist[i].ToLower();
+                }
+            }
+            catch(Exception ex)
+            {
+                if(ex is FileNotFoundException)
+                {
+                    try
+                    {
+                        File.Create(Path.GetDirectoryName(assembly.Location) + "\\whitelist.txt");
+                    }
+                    catch 
+                    { 
+                        //do nothing 
+                    }
+                }
+                
+                whitelist = new List<string>();
+            }
+            
         }
     }
 }

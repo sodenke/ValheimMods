@@ -59,7 +59,7 @@ namespace MonsterLootMultiplierMod
                 whitelist = File.ReadAllLines(Path.GetDirectoryName(assembly.Location) + "\\whitelist.txt").Distinct().ToList();
                 for(int i=0; i<whitelist.Count; i++)
                 {
-                    whitelist[i] = whitelist[i].ToLower();
+                    whitelist[i] = whitelist[i].ToLower().Trim();
                 }
             }
             catch(Exception ex)
